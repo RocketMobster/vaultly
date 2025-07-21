@@ -7,14 +7,20 @@ export default function Dashboard() {
   const [newName, setNewName] = useState('')
   const [fieldInput, setFieldInput] = useState('')
   const [fieldType, setFieldType] = useState('text')
+  const [dropdownOptions, setDropdownOptions] = useState('')
   const [fields, setFields] = useState([])
 
   const handleAddField = () => {
     const name = fieldInput.trim()
     if (!name || fields.some(f => f.name === name)) return
-    setFields(f => [...f, { name, type: fieldType }])
+    let field = { name, type: fieldType }
+    if (fieldType === 'dropdown') {
+      field.options = dropdownOptions.split(',').map(opt => opt.trim()).filter(Boolean)
+    }
+    setFields(f => [...f, field])
     setFieldInput('')
     setFieldType('text')
+    setDropdownOptions('')
   }
 
   const handleRemoveField = (name) => {
@@ -50,15 +56,26 @@ export default function Dashboard() {
               onChange={e => setFieldInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddField() } }}
             />
-            <select
-              className="border rounded px-2 py-1"
-              value={fieldType}
-              onChange={e => setFieldType(e.target.value)}
-            >
-              <option value="text">Text</option>
-              <option value="date">Date</option>
-              <option value="number">Number</option>
-            </select>
+          <select
+            className="border rounded px-2 py-1"
+            value={fieldType}
+            onChange={e => setFieldType(e.target.value)}
+          >
+            <option value="text">Text</option>
+            <option value="date">Date</option>
+            <option value="number">Number</option>
+            <option value="dropdown">Dropdown</option>
+            <option value="tags">Tags</option>
+            <option value="image">Image</option>
+          </select>
+          {fieldType === 'dropdown' && (
+            <input
+              className="border rounded px-2 py-1 flex-1"
+              placeholder="Dropdown options (comma separated)"
+              value={dropdownOptions}
+              onChange={e => setDropdownOptions(e.target.value)}
+            />
+          )}
             <button
               className="bg-gray-600 text-white px-4 py-1 rounded hover:bg-gray-700"
               onClick={handleAddField}
@@ -72,7 +89,7 @@ export default function Dashboard() {
           <div className="mb-2 text-sm text-gray-700 flex flex-wrap gap-2">
             {fields.map(field => (
               <span key={field.name} className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded flex items-center gap-1">
-                {field.name} <span className="text-xs text-gray-500">({field.type})</span>
+                {field.name} <span className="text-xs text-gray-500">({field.type}{field.type === 'dropdown' && field.options ? ': ' + field.options.join(', ') : ''})</span>
                 <button
                   className="ml-1 text-xs text-red-500 hover:text-red-700"
                   onClick={() => handleRemoveField(field.name)}
